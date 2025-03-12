@@ -1,6 +1,5 @@
 ---
 title: Shrinking World a Unity3d Game
-description: 
 date: 2019-12-10
 permalink: 
 aliases: 

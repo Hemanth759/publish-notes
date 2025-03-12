@@ -1,6 +1,5 @@
 ---
 title: Implementing Sand deformation in Unity game
-description: 
 date: 2020-06-20
 permalink: 
 aliases: 
