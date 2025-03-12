@@ -17,7 +17,7 @@ const config: QuartzConfig = {
       tagId: "G-KLWETP18WH",
     },
     locale: "en-US",
-    baseUrl: "quartz.jzhao.xyz",
+    baseUrl: "hemanth759.github.io/publish-notes",
     ignorePatterns: ["private", "templates", ".obsidian"],
     defaultDateType: "created",
     generateSocialImages: true,
