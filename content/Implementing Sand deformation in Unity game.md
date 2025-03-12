@@ -8,6 +8,7 @@ tags:
 draft: false
 ---
 This article teaches you how to implement the sand balls game mechanics in unity.
+
 ![](https://i.imgur.com/8S0alQE.png)
 
 I wanted to implement the **deforming** of the mesh as in the sand balls game the sand plane gets deformed on the player touch input.
@@ -22,7 +23,9 @@ Before we continue I want you to know that the source code of my game code in in
 - More the vertices more the complexity of the 3d model.
 - The triangles form the shape of the model.
 - The triangles are made up of any three vertices from the vertices list of the 3d model.
+
 ![](https://i.imgur.com/IfvrV3h.png)
+
 # Implementation
 ## Sand plane
 - The plane is simple primitive game object from the inbuilt unity editor.
@@ -33,10 +36,13 @@ Before we continue I want you to know that the source code of my game code in in
 
 ## Physics
 The source code of the project is hosted on my github [repo](https://github.com/Hemanth759/sand-balls-game).
+
 <script src="https://gist.github.com/Hemanth759/6b63260c9aa6f2a93b8351da9328b3d5.js"></script>
+
 - When ever the touch inputs gets detected we get the position of hit with the raycast and deform the plane area with some radius around the hit point forming a circle
 - To deform the area we just loop through the vertices of the plane and calculate the distance of the vertices from the hit point. If the distance if less then the specified radius then push the vertex back by adding vector.forward to the vertex position.
 - Don’t forget to update the meshcollider mesh with the new modified mesh as the balls need to fall through the deformed area.
+
 ![](https://i.imgur.com/da1bHdv.png)
 
 ----
