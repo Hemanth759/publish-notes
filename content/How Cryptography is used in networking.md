@@ -5,6 +5,8 @@ tags:
   - computer-science/cryptography
 site: https://dev.to/hemanthvanam/cryptography-in-networking-3o8i
 alternateSite: https://w.amazon.com/bin/view/Users/vanamh/SecureCommunicationsOverInternet/
+title: How Cryptography is used in networking?
+permalink:
 ---
 # Introduction
 ## Why data needs to be secure and encrypted?
