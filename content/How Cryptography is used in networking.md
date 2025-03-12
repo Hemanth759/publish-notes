@@ -27,7 +27,7 @@ Widely there are two ways to implement encryptions. 
 ----
 # Establishing encryption between two parties
 
-> [!INFO]- Why initial encryption establishment is difficult problem
+> [!INFO]+ Why initial encryption establishment is difficult problem
 > Imagine you want to communicate with your friend without anyone hearing your conversations. You could talk in private where nobody is present but that is not possible in the internet as the every byte of data transmitting over internet can be interrupted and read by anybody. You could establish a symmetric encryption secret key between your friend and you and share the data after encrypting the message which looks like a garbage text for a person who can't decrypt it. Since your friend has the shared secret key they could decrypt the message using it and send a reply to it after encrypting to you. But how are you going to share this secret key in the first place? 
 > **Solutions**:
 > 1. Meet your friend in real world and share the key. (It is not feasible to travel every time you want to connect with new person)
