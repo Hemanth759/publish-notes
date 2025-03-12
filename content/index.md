@@ -6,4 +6,4 @@ Hi,
 TODO: add something about myself here.
 
 ## Blogs
-- [[publish-notes/content/Cryptography in Networking|Cryptography in Networking]].
+- [[How Cryptography is used in networking]].
