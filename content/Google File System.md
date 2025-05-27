@@ -77,3 +77,4 @@ The master recovers its file system by replaying the operation log. To minimise 
 
 ### 2.7 Consistency Model
 #### 2.7.1 *Guarantees* by GFS
+Did something here.
