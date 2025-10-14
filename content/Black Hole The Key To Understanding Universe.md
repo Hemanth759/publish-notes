@@ -12,4 +12,9 @@ genres:
   - maths
 draft: true
 ---
-![[Neutron Star]]
+## Gravity vs Others
+
+
+
+![[Neutron Star#What is a Neutron Star?]]
+
