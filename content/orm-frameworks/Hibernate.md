@@ -42,6 +42,13 @@ All examples use the `User` and `Order` entity models defined in [[Object Relati
 ### 1. Retrieve Records with Criteria
 
 ```java
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Predicate;
+import java.util.List;
+
 // Using JPQL
 public List<User> findActiveUsers(EntityManager em) {
     return em.createQuery(
@@ -68,6 +75,15 @@ public List<User> findUsersByStatusAndEmail(EntityManager em, String status, Str
 ### 2. Retrieve Records with JOIN
 
 ```java
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import java.math.BigDecimal;
+import java.util.List;
+
 // Using JPQL with JOIN FETCH (avoids N+1 problem)
 public List<User> findUsersWithOrders(EntityManager em) {
     return em.createQuery(
@@ -96,6 +112,8 @@ public List<User> findUsersWithOrdersAboveAmount(EntityManager em, BigDecimal am
 ### 3. Insert New Data
 
 ```java
+import jakarta.persistence.EntityManager;
+
 public User createUser(EntityManager em, String username, String email) {
     User user = new User();
     user.setUsername(username);
@@ -110,6 +128,8 @@ public User createUser(EntityManager em, String username, String email) {
 ### 4. Update a Record
 
 ```java
+import jakarta.persistence.EntityManager;
+
 public void updateUserEmail(EntityManager em, Long userId, String newEmail) {
     User user = em.find(User.class, userId);
     if (user != null) {
@@ -131,6 +151,12 @@ public int updateUserStatus(EntityManager em, String oldStatus, String newStatus
 ### 5. Transactional Write with Multiple Operations
 
 ```java
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Transactional
 public void createUserWithOrders(EntityManager em, String username, String email,
                                  List<OrderData> orderDataList) {
@@ -189,6 +215,15 @@ public void createUserWithOrdersManual(EntityManager em, String username, String
 ### 6. Optimistic Locking
 
 ```java
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Version;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.OptimisticLockException;
+import org.springframework.transaction.annotation.Transactional;
+
 @Entity
 public class User {
     @Id
@@ -241,6 +276,12 @@ public void updateWithRetry(EntityManager em, Long userId, String newEmail) {
 ### 7. Pessimistic Locking
 
 ```java
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.HashMap;
+import java.util.Map;
+
 // Pessimistic Read Lock (shared lock)
 @Transactional
 public User getUserWithReadLock(EntityManager em, Long userId) {
@@ -291,6 +332,10 @@ hibernate.jdbc.batch_versioned_data=true
 ### Bulk Insert
 
 ```java
+import jakarta.persistence.EntityManager;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+
 @Transactional
 public void bulkInsertWithHibernate(EntityManager em, List<User> users) {
     int batchSize = 50;
@@ -313,6 +358,10 @@ public void bulkInsertWithHibernate(EntityManager em, List<User> users) {
 ### Bulk Update
 
 ```java
+import jakarta.persistence.EntityManager;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+
 @Transactional
 public void bulkUpdateWithHibernate(EntityManager em, List<User> users) {
     int batchSize = 50;

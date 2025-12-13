@@ -39,6 +39,11 @@ All examples use the `User` and `Order` entity models defined in [[Object Relati
 ## Basic Repository Example
 
 ```java
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import java.util.List;
+
 public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByUsername(String username);
 
@@ -52,6 +57,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 ### 1. Retrieve Records with Criteria
 
 ```java
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import java.util.List;
+
 public interface UserRepository extends JpaRepository<User, Long> {
     // Method name query
     List<User> findByStatus(String status);
@@ -71,6 +81,12 @@ List<User> activeUsers = userRepository.findByStatus("ACTIVE");
 ### 2. Retrieve Records with JOIN
 
 ```java
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import java.math.BigDecimal;
+import java.util.List;
+
 public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.orders WHERE u.status = :status")
     List<User> findUsersWithOrders(@Param("status") String status);
@@ -85,6 +101,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 ### 3. Insert New Data
 
 ```java
+// No additional imports needed beyond repository injection
+
 public User createUser(UserRepository userRepository, String username, String email) {
     User user = new User();
     user.setUsername(username);
@@ -98,6 +116,8 @@ public User createUser(UserRepository userRepository, String username, String em
 ### 4. Update a Record
 
 ```java
+// No additional imports needed beyond repository injection
+
 public void updateUserEmail(UserRepository userRepository, Long userId, String newEmail) {
     userRepository.findById(userId).ifPresent(user -> {
         user.setEmail(newEmail);
@@ -106,6 +126,11 @@ public void updateUserEmail(UserRepository userRepository, Long userId, String n
 }
 
 // Custom update query
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 public interface UserRepository extends JpaRepository<User, Long> {
     @Modifying
     @Query("UPDATE User u SET u.status = :newStatus WHERE u.status = :oldStatus")
@@ -117,6 +142,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
 ### 5. Transactional Write with Multiple Operations
 
 ```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Service
 public class UserService {
     @Autowired
@@ -160,6 +192,15 @@ public class UserService {
 ### 6. Optimistic Locking
 
 ```java
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Version;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 @Entity
 public class User {
     @Id
@@ -193,6 +234,18 @@ public class UserService {
 ### 7. Pessimistic Locking
 
 ```java
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.Optional;
+
 public interface UserRepository extends JpaRepository<User, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT u FROM User u WHERE u.id = :id")
@@ -225,6 +278,11 @@ Spring Data JPA is convenient but not optimal for large bulk operations.
 ### Naive Approach (Avoid for Large Datasets)
 
 ```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+
 @Service
 public class UserService {
     @Autowired
@@ -241,6 +299,11 @@ public class UserService {
 ### Optimized Approach with Chunking
 
 ```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+
 @Service
 public class UserService {
     @Autowired
@@ -264,6 +327,11 @@ public class UserService {
 ### Using Native Queries
 
 ```java
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 public interface UserRepository extends JpaRepository<User, Long> {
     // ✅ BEST: Use native query for bulk operations
     @Modifying
@@ -280,6 +348,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
 ### Pagination and Sorting
 
 ```java
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
 public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findByStatus(String status, Pageable pageable);
 }
@@ -292,6 +366,9 @@ Page<User> users = userRepository.findByStatus("ACTIVE", pageable);
 ### Specifications for Dynamic Queries
 
 ```java
+import org.springframework.data.jpa.domain.Specification;
+import java.util.List;
+
 public class UserSpecifications {
     public static Specification<User> hasStatus(String status) {
         return (root, query, cb) -> cb.equal(root.get("status"), status);
@@ -313,6 +390,11 @@ List<User> users = userRepository.findAll(spec);
 ### Projections
 
 ```java
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import java.util.List;
+
 // Interface-based projection
 public interface UserSummary {
     String getUsername();
@@ -342,6 +424,23 @@ List<UserDTO> findUserDTOsByStatus(@Param("status") String status);
 ### Auditing
 
 ```java
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.context.SecurityContextHolder;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class User {

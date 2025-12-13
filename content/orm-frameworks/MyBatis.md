@@ -42,6 +42,8 @@ MyBatis is a persistence framework that takes a different approach - it's a SQL 
 ### User Entity (Plain POJO)
 
 ```java
+import java.util.List;
+
 public class User {
     private Long id;
     private String username;
@@ -79,6 +81,9 @@ public class User {
 ### Order Entity (Plain POJO)
 
 ```java
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 public class Order {
     private Long id;
     private String orderNumber;
@@ -143,6 +148,11 @@ public class Order {
 ## Basic Mapper Example
 
 ```java
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Options;
+
 @Mapper
 public interface UserMapper {
     @Select("SELECT * FROM users WHERE id = #{id}")
@@ -159,6 +169,11 @@ public interface UserMapper {
 ### 1. Retrieve Records with Criteria
 
 ```java
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Param;
+import java.util.List;
+
 // Mapper interface
 @Mapper
 public interface UserMapper {
@@ -180,6 +195,14 @@ public interface UserMapper {
 ### 2. Retrieve Records with JOIN
 
 ```java
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Results;
+import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.Many;
+import org.apache.ibatis.annotations.Param;
+import java.util.List;
+
 // Mapper interface
 @Mapper
 public interface UserMapper {
@@ -220,6 +243,10 @@ public interface UserMapper {
 ### 3. Insert New Data
 
 ```java
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Options;
+
 @Mapper
 public interface UserMapper {
     @Insert("INSERT INTO users(username, email, status) VALUES(#{username}, #{email}, #{status})")
@@ -239,6 +266,10 @@ userMapper.insert(user);
 ### 4. Update a Record
 
 ```java
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.Param;
+
 @Mapper
 public interface UserMapper {
     @Update("UPDATE users SET email = #{email} WHERE id = #{id}")
@@ -253,6 +284,14 @@ public interface UserMapper {
 ### 5. Transactional Write with Multiple Operations
 
 ```java
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
+import java.util.List;
+
 // Using SqlSession
 public void createUserWithOrders(SqlSessionFactory sessionFactory,
                                 String username, String email,
@@ -320,6 +359,11 @@ public class UserService {
 ### 6. Optimistic Locking
 
 ```java
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
+import javax.persistence.OptimisticLockException;
+
 // Manual optimistic locking implementation
 @Mapper
 public interface UserMapper {
@@ -347,6 +391,11 @@ public void updateUserEmailOptimistic(UserMapper mapper, Long userId, String new
 ### 7. Pessimistic Locking
 
 ```java
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+
 // Pessimistic locking with SELECT FOR UPDATE
 @Mapper
 public interface UserMapper {
@@ -386,6 +435,10 @@ MyBatis provides excellent performance for bulk operations.
 ### Batch Insert
 
 ```java
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import java.util.List;
+
 // Mapper interface
 @Mapper
 public interface UserMapper {
@@ -418,6 +471,11 @@ public interface UserMapper {
 ### Usage with Batch Executor
 
 ```java
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.ExecutorType;
+import java.util.List;
+
 public void bulkOperations(SqlSessionFactory sessionFactory,
                           List<User> usersToInsert,
                           List<User> usersToUpdate) {
@@ -505,6 +563,14 @@ MyBatis excels at dynamic SQL generation.
 ### Type Handlers
 
 ```java
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedTypes;
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 @MappedTypes(Status.class)
 public class StatusTypeHandler extends BaseTypeHandler<Status> {
     @Override
