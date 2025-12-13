@@ -150,39 +150,18 @@ public int updateUserStatus(EntityManager em, String oldStatus, String newStatus
 
 ### 5. Transactional Write with Multiple Operations
 
+> [!note] Hibernate vs Spring Transaction Management
+> Hibernate is a standalone ORM and does NOT depend on Spring Framework. The examples below show pure JPA/Hibernate transaction management using `EntityTransaction`. If you're using Spring, you can use `@Transactional` annotation instead (see [[Spring Data JPA]]).
+
 ```java
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
-import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Transactional
+// Pure Hibernate/JPA transaction management (no Spring required)
 public void createUserWithOrders(EntityManager em, String username, String email,
                                  List<OrderData> orderDataList) {
-    // Create user
-    User user = new User();
-    user.setUsername(username);
-    user.setEmail(email);
-    user.setStatus("ACTIVE");
-    em.persist(user);
-
-    // Create orders
-    for (OrderData orderData : orderDataList) {
-        Order order = new Order();
-        order.setOrderNumber(orderData.getOrderNumber());
-        order.setTotalAmount(orderData.getAmount());
-        order.setOrderDate(LocalDateTime.now());
-        order.setUser(user);
-        em.persist(order);
-    }
-
-    // If any exception occurs, entire transaction rolls back
-}
-
-// Manual transaction management
-public void createUserWithOrdersManual(EntityManager em, String username, String email,
-                                       List<OrderData> orderDataList) {
     EntityTransaction tx = em.getTransaction();
     try {
         tx.begin();
@@ -222,7 +201,6 @@ import jakarta.persistence.Version;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.OptimisticLockException;
-import org.springframework.transaction.annotation.Transactional;
 
 @Entity
 public class User {
@@ -238,16 +216,20 @@ public class User {
     // getters, setters
 }
 
-// Usage
-@Transactional
+// Usage with manual transaction (pure Hibernate/JPA)
 public void updateUserEmailOptimistic(EntityManager em, Long userId, String newEmail) {
+    EntityTransaction tx = em.getTransaction();
+    tx.begin();
+
     User user = em.find(User.class, userId);
     user.setEmail(newEmail);
+
+    tx.commit();
     // On commit, JPA checks if version matches
     // If version changed, throws OptimisticLockException
 }
 
-// Handling optimistic lock exception
+// Handling optimistic lock exception with retry
 public void updateWithRetry(EntityManager em, Long userId, String newEmail) {
     int maxRetries = 3;
     int attempt = 0;
@@ -277,25 +259,33 @@ public void updateWithRetry(EntityManager em, Long userId, String newEmail) {
 
 ```java
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.LockModeType;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 
 // Pessimistic Read Lock (shared lock)
-@Transactional
 public User getUserWithReadLock(EntityManager em, Long userId) {
-    return em.find(User.class, userId, LockModeType.PESSIMISTIC_READ);
+    EntityTransaction tx = em.getTransaction();
+    tx.begin();
+
+    User user = em.find(User.class, userId, LockModeType.PESSIMISTIC_READ);
     // Other transactions can read but not modify
+
+    tx.commit();  // Lock released on commit
+    return user;
 }
 
 // Pessimistic Write Lock (exclusive lock)
-@Transactional
 public void updateUserWithWriteLock(EntityManager em, Long userId, String newEmail) {
+    EntityTransaction tx = em.getTransaction();
+    tx.begin();
+
     User user = em.find(User.class, userId, LockModeType.PESSIMISTIC_WRITE);
     // Row is locked, other transactions must wait
     user.setEmail(newEmail);
-    // Lock released on commit
+
+    tx.commit();  // Lock released on commit
 }
 
 // Using JPQL with lock
@@ -333,11 +323,12 @@ hibernate.jdbc.batch_versioned_data=true
 
 ```java
 import jakarta.persistence.EntityManager;
-import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityTransaction;
 import java.util.List;
 
-@Transactional
 public void bulkInsertWithHibernate(EntityManager em, List<User> users) {
+    EntityTransaction tx = em.getTransaction();
+    tx.begin();
     int batchSize = 50;
 
     for (int i = 0; i < users.size(); i++) {
@@ -352,6 +343,8 @@ public void bulkInsertWithHibernate(EntityManager em, List<User> users) {
 
     em.flush();
     em.clear();
+
+    tx.commit();
 }
 ```
 
@@ -359,11 +352,12 @@ public void bulkInsertWithHibernate(EntityManager em, List<User> users) {
 
 ```java
 import jakarta.persistence.EntityManager;
-import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityTransaction;
 import java.util.List;
 
-@Transactional
 public void bulkUpdateWithHibernate(EntityManager em, List<User> users) {
+    EntityTransaction tx = em.getTransaction();
+    tx.begin();
     int batchSize = 50;
 
     for (int i = 0; i < users.size(); i++) {
@@ -382,16 +376,23 @@ public void bulkUpdateWithHibernate(EntityManager em, List<User> users) {
 
     em.flush();
     em.clear();
+
+    tx.commit();
 }
 
 // For pure bulk updates without loading entities
-@Transactional
 public int bulkUpdateStatus(EntityManager em, String oldStatus, String newStatus) {
-    return em.createQuery(
+    EntityTransaction tx = em.getTransaction();
+    tx.begin();
+
+    int updated = em.createQuery(
         "UPDATE User u SET u.status = :newStatus WHERE u.status = :oldStatus")
         .setParameter("newStatus", newStatus)
         .setParameter("oldStatus", oldStatus)
         .executeUpdate();
+
+    tx.commit();
+    return updated;
 }
 ```
 
